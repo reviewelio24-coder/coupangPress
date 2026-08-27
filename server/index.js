@@ -289,7 +289,7 @@ app.post('/api/publish', async (req, res) => {
 });
 
 const server = app.listen(PORT, HOST, () => {
-  console.log(`쿠팡 리뷰 → WordPress 웹앱: http://${HOST}:${PORT}`);
+  console.log(`coupangPress: http://${HOST}:${PORT}`);
   if (HOST === '127.0.0.1') {
     console.log(`  (브라우저) http://127.0.0.1:${PORT} 또는 http://localhost:${PORT}`);
   }

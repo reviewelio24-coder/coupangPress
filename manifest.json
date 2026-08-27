@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "쿠팡 리뷰 크롤러 (대시보드)",
-  "version": "1.4.3",
-  "description": "쿠팡 리뷰 크롤링(확장) + 웹 대시보드 WordPress 자동 발행",
+  "name": "coupangPress",
+  "version": "1.5.0",
+  "description": "coupangPress — 쿠팡 리뷰 크롤링 + WordPress 자동 발행",
   "permissions": [
     "activeTab",
     "storage",
@@ -28,7 +28,7 @@
   },
   "action": {
     "default_popup": "popup.html",
-    "default_title": "쿠팡 리뷰 크롤러",
+    "default_title": "coupangPress",
     "default_icon": {
       "16": "icons/icon16.png",
       "48": "icons/icon48.png",

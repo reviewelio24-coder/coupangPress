@@ -1,8 +1,8 @@
 {
-  "name": "coupang-review-wordpress-publisher",
-  "version": "1.1.0",
+  "name": "coupangpress",
+  "version": "1.5.0",
   "private": true,
-  "description": "쿠팡 리뷰 크롤 → WordPress 발행 웹앱",
+  "description": "coupangPress — 쿠팡 리뷰 크롤 → WordPress 발행",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",

@@ -1,5 +1,5 @@
 // 백그라운드: 웹 대시보드 연동(작업 큐) + 다중 상품 크롤링
-console.log('쿠팡 리뷰 크롤러 백그라운드');
+console.log('coupangPress 백그라운드');
 
 const DEFAULT_API = 'https://review.choineiu.com';
 const BRIDGE_ALARM = 'bridge_tick';
