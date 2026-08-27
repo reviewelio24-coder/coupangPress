@@ -1,0 +1,22 @@
+{
+  "name": "coupang-review-wordpress-publisher",
+  "version": "1.1.0",
+  "private": true,
+  "description": "쿠팡 리뷰 크롤 → WordPress 발행 웹앱",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "start:safe": "bash start.sh",
+    "dev": "node --watch index.js",
+    "postinstall": "playwright install chromium || true"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "playwright": "^1.49.1"
+  }
+}

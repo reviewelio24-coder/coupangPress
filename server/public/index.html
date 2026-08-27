@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>쿠팡 리뷰 → WordPress</title>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <div class="layout">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">Review → Blog Pipeline</p>
+        <h1>쿠팡 리뷰 워드프레스 자동 발행</h1>
+        <p class="lead">쿠팡 URL만 입력하면 서버가 리뷰를 수집하고 WordPress 글을 생성합니다.</p>
+      </div>
+      <div class="status-cards">
+        <div class="card" id="crawlCard">
+          <span class="label">크롤링 엔진</span>
+          <strong id="crawlStatus">확인 중...</strong>
+        </div>
+        <div class="card" id="bridgeCard">
+          <span class="label">Chrome 확장 (선택)</span>
+          <strong id="bridgeStatus">—</strong>
+        </div>
+        <div class="card" id="wpCard">
+          <span class="label">WordPress</span>
+          <strong id="wpStatus">확인 중...</strong>
+        </div>
+      </div>
+    </header>
+
+    <main class="grid">
+      <section class="panel">
+        <h2>새 작업</h2>
+        <form id="jobForm">
+          <div class="url-list" id="urlList">
+            <label class="url-row">
+              쿠팡 상품 URL 1
+              <input type="url" class="coupang-url" required placeholder="https://www.coupang.com/vp/products/..." />
+            </label>
+          </div>
+          <button type="button" id="addUrlBtn" class="ghost">+ 상품 URL 추가 (최대 5개)</button>
+          <p class="hint-inline">SEO 키워드는 본문에 <strong>상품 수 × 5~6회</strong> 반복됩니다. (예: 4개면 20~24회)</p>
+          <label>
+            SEO 키워드
+            <input type="text" id="seoKeyword" required placeholder="예: 와이드 모니터" />
+          </label>
+          <label>
+            최대 크롤링 페이지 (상품당)
+            <input type="number" id="maxPages" min="1" max="50" value="5" />
+          </label>
+          <label class="checkbox">
+            <input type="checkbox" id="autoPublish" checked />
+            크롤링 완료 후 WordPress에 자동 발행
+          </label>
+          <button type="submit" class="primary" id="startBtn">크롤링 시작</button>
+        </form>
+        <p class="hint" id="modeHint">
+          <strong>현재 권장:</strong> Chrome 확장 브릿지 모드입니다. 쿠팡이 서버 자동접속을 막아, 본인 Chrome에서 크롤링합니다.<br>
+          1) <code>chrome://extensions</code>에서 확장 <strong>새로고침</strong> (v1.3.6) → 팝업에서 <strong>웹 대시보드 연동 ON</strong><br>
+          2) 이 대시보드 페이지를 <strong>새로고침</strong> (확장과 자동 연동됨)<br>
+          3) Chrome 확장 카드가 <strong>연결됨</strong>인지 확인 후 크롤링 시작
+        </p>
+      </section>
+
+      <section class="panel">
+        <h2>진행 상황</h2>
+        <div id="activeJob" class="empty">아직 실행 중인 작업이 없습니다.</div>
+        <div id="jobProgress" hidden>
+          <div class="progress-bar"><div id="progressFill"></div></div>
+          <p id="progressMessage" class="progress-msg"></p>
+          <div class="meta">
+            <span id="jobStatusBadge" class="badge">queued</span>
+            <span id="reviewCount"></span>
+          </div>
+          <button type="button" id="publishBtn" class="secondary" hidden>WordPress 발행</button>
+          <a id="postLink" href="#" target="_blank" rel="noopener" hidden>발행된 글 보기 →</a>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="/app.js"></script>
+</body>
+</html>
