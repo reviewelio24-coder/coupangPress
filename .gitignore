@@ -1,0 +1,12 @@
+server/node_modules/
+node_modules/
+.env
+.env.*
+!.env.example
+server/.env
+server/.env.*
+!server/.env.example
+.DS_Store
+*.pem
+*.key
+.htpasswd

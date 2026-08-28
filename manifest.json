@@ -1,0 +1,59 @@
+{
+  "manifest_version": 3,
+  "name": "coupangPress",
+  "version": "1.5.1",
+  "description": "coupangPress — 쿠팡 리뷰 크롤링 + WordPress 자동 발행",
+  "permissions": [
+    "activeTab",
+    "storage",
+    "downloads",
+    "tabs",
+    "scripting",
+    "alarms"
+  ],
+  "host_permissions": [
+    "https://www.coupang.com/*",
+    "http://localhost:8787/*",
+    "http://127.0.0.1:8787/*",
+    "http://1.201.116.190/*",
+    "https://review.choineiu.com/*",
+    "http://review.choineiu.com/*",
+    "http://*/*",
+    "https://*/*"
+  ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "coupangPress",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.coupang.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_end"
+    },
+    {
+      "matches": [
+        "http://127.0.0.1:8787/*",
+        "http://localhost:8787/*",
+        "http://1.201.116.190/*",
+        "http://review.choineiu.com/*",
+        "https://review.choineiu.com/*"
+      ],
+      "js": ["bridge-page.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "background": {
+    "service_worker": "background.js"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "name": "coupangpress",
+  "version": "1.5.0",
+  "private": true,
+  "description": "coupangPress — 쿠팡 리뷰 크롤 → WordPress 발행",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "start:safe": "bash start.sh",
+    "dev": "node --watch index.js",
+    "postinstall": "playwright install chromium || true"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "playwright": "^1.49.1"
+  }
+}
