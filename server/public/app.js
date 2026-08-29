@@ -75,8 +75,12 @@ function renderJob(job) {
 
   const max = job.progress?.maxPages || job.maxPages || 5;
   const cur = job.progress?.currentPage || 0;
-  const done = ['completed', 'published', 'failed'].includes(job.status);
-  const pct = done ? 100 : job.status === 'publishing' ? 92 : Math.min(95, max ? (cur / max) * 100 : 10);
+  const done = ['completed', 'published', 'failed', 'drafted'].includes(job.status);
+  const pct = done
+    ? 100
+    : job.status === 'publishing' || job.status === 'generating'
+      ? 92
+      : Math.min(95, max ? (cur / max) * 100 : 10);
 
   $('#progressFill').style.width = `${pct}%`;
   if (job.status === 'failed' && job.error) {
@@ -84,6 +88,11 @@ function renderJob(job) {
   } else if (job.status === 'publishing') {
     $('#progressMessage').textContent =
       job.progress?.message || 'WordPress 글 생성·발행 중… (상품이 많으면 2~3분 걸릴 수 있습니다)';
+  } else if (job.status === 'generating') {
+    $('#progressMessage').textContent =
+      job.progress?.message || '본문 HTML 생성 중… (상품이 많으면 2~3분 걸릴 수 있습니다)';
+  } else if (job.error && job.status === 'completed') {
+    $('#progressMessage').textContent = job.error;
   } else {
     $('#progressMessage').textContent = job.progress?.message || job.status;
   }
@@ -105,8 +114,22 @@ function renderJob(job) {
   }
   $('#reviewCount').textContent = productBits.join(' · ');
 
-  $('#publishBtn').hidden = job.status !== 'completed';
-  $('#publishBtn').disabled = job.status === 'publishing';
+  $('#publishBtn').hidden = job.status !== 'completed' && job.status !== 'drafted';
+  $('#publishBtn').disabled = job.status === 'publishing' || job.status === 'generating';
+  $('#draftBtn').hidden = job.status !== 'completed' && job.status !== 'drafted';
+  $('#draftBtn').disabled = job.status === 'generating';
+
+  const draft = job.draft;
+  const panel = $('#draftPanel');
+  if (draft?.content) {
+    panel.hidden = false;
+    $('#draftTitle').value = draft.title || '';
+    $('#draftKeyphrase').value = draft.focusKeyphrase || job.seoKeyword || '';
+    $('#draftMeta').value = draft.metaDescription || '';
+    $('#draftHtml').value = draft.content || '';
+  } else {
+    panel.hidden = true;
+  }
 
   const link = $('#postLink');
   if (job.publish?.postUrl) {
@@ -172,7 +195,7 @@ $('#jobForm').addEventListener('submit', async (e) => {
   const coupangUrls = collectUrls();
   const seoKeyword = $('#seoKeyword').value.trim();
   const maxPages = Number($('#maxPages').value) || 5;
-  const autoPublish = $('#autoPublish').checked;
+  const outputMode = document.querySelector('input[name="outputMode"]:checked')?.value || 'wordpress';
 
   if (!coupangUrls.length) {
     alert('쿠팡 상품 URL을 1개 이상 입력하세요.');
@@ -201,7 +224,8 @@ $('#jobForm').addEventListener('submit', async (e) => {
         coupangUrls,
         coupangUrl: coupangUrls[0],
         maxPages,
-        autoPublish,
+        autoPublish: outputMode === 'wordpress',
+        outputMode,
         seoKeyword
       })
     });
@@ -213,6 +237,76 @@ $('#jobForm').addEventListener('submit', async (e) => {
   } finally {
     $('#startBtn').disabled = false;
   }
+});
+
+$('#draftBtn').addEventListener('click', async () => {
+  if (!activeJobId) return;
+  $('#draftBtn').disabled = true;
+  try {
+    await api(`/api/jobs/${activeJobId}/draft`, { method: 'POST' });
+    startPolling();
+  } catch (err) {
+    alert(err.message);
+  } finally {
+    $('#draftBtn').disabled = false;
+  }
+});
+
+async function copyText(value) {
+  const text = String(value || '');
+  if (!text) return;
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch (_) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    ta.remove();
+  }
+}
+
+document.querySelectorAll('.copy-btn').forEach((btn) => {
+  btn.addEventListener('click', async () => {
+    const el = document.getElementById(btn.dataset.copy);
+    await copyText(el?.value);
+    const prev = btn.textContent;
+    btn.textContent = '복사됨';
+    setTimeout(() => {
+      btn.textContent = prev;
+    }, 1200);
+  });
+});
+
+$('#copyHtmlBtn').addEventListener('click', async () => {
+  await copyText($('#draftHtml').value);
+  const btn = $('#copyHtmlBtn');
+  const prev = btn.textContent;
+  btn.textContent = '복사됨';
+  setTimeout(() => {
+    btn.textContent = prev;
+  }, 1200);
+});
+
+$('#downloadHtmlBtn').addEventListener('click', () => {
+  const title = $('#draftTitle').value.trim() || '본문';
+  const html = `<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>${title.replace(/</g, '')}</title>
+</head>
+<body>
+${$('#draftHtml').value}
+</body>
+</html>`;
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `${title.slice(0, 40).replace(/[\\/:*?"<>|]/g, '_')}.html`;
+  a.click();
+  URL.revokeObjectURL(a.href);
 });
 
 $('#publishBtn').addEventListener('click', async () => {

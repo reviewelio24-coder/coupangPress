@@ -54,10 +54,17 @@
             최대 크롤링 페이지 (상품당)
             <input type="number" id="maxPages" min="1" max="50" value="5" />
           </label>
-          <label class="checkbox">
-            <input type="checkbox" id="autoPublish" checked />
-            크롤링 완료 후 WordPress에 자동 발행
-          </label>
+          <fieldset class="output-mode">
+            <legend>완료 후</legend>
+            <label class="radio">
+              <input type="radio" name="outputMode" value="wordpress" checked />
+              WordPress 자동 발행
+            </label>
+            <label class="radio">
+              <input type="radio" name="outputMode" value="html" />
+              본문 HTML만 생성 (품절 교체 등 수동 발행)
+            </label>
+          </fieldset>
           <button type="submit" class="primary" id="startBtn">크롤링 시작</button>
         </form>
         <p class="hint" id="modeHint">
@@ -78,8 +85,42 @@
             <span id="jobStatusBadge" class="badge">queued</span>
             <span id="reviewCount"></span>
           </div>
+          <button type="button" id="draftBtn" class="ghost" hidden>본문 HTML 다시 생성</button>
           <button type="button" id="publishBtn" class="secondary" hidden>WordPress 발행</button>
           <a id="postLink" href="#" target="_blank" rel="noopener" hidden>발행된 글 보기 →</a>
+          <div id="draftPanel" hidden>
+            <h3>수동 발행용 본문</h3>
+            <p class="hint-inline">WordPress에서 제목·초점 키프레이즈·메타 설명을 각각 넣고, 본문은 사용자 정의 HTML에 붙여넣으세요.</p>
+            <label>
+              제목
+              <div class="copy-row">
+                <input type="text" id="draftTitle" readonly />
+                <button type="button" class="ghost copy-btn" data-copy="draftTitle">복사</button>
+              </div>
+            </label>
+            <label>
+              초점 키프레이즈
+              <div class="copy-row">
+                <input type="text" id="draftKeyphrase" readonly />
+                <button type="button" class="ghost copy-btn" data-copy="draftKeyphrase">복사</button>
+              </div>
+            </label>
+            <label>
+              메타 설명
+              <div class="copy-row">
+                <textarea id="draftMeta" rows="3" readonly></textarea>
+                <button type="button" class="ghost copy-btn" data-copy="draftMeta">복사</button>
+              </div>
+            </label>
+            <label>
+              본문 HTML
+              <textarea id="draftHtml" rows="14" readonly></textarea>
+            </label>
+            <div class="draft-actions">
+              <button type="button" class="secondary" id="copyHtmlBtn">본문 HTML 복사</button>
+              <button type="button" class="ghost" id="downloadHtmlBtn">HTML 파일 받기</button>
+            </div>
+          </div>
         </div>
       </section>
     </main>

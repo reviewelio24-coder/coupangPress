@@ -102,6 +102,58 @@ function schedulePublish(jobId) {
     });
 }
 
+function scheduleDraft(jobId) {
+  const job = jobs.getJob(jobId);
+  if (!job) return;
+  jobs.setGenerating(jobId);
+  generateDraftJobResult(job)
+    .then((draft) => {
+      jobs.setDrafted(jobId, draft);
+      console.log(`[draft ${jobId}] HTML 생성 완료: ${draft.title}`);
+    })
+    .catch((err) => {
+      console.error(`[draft ${jobId}] 실패:`, err.message);
+      jobs.revertToCompleted(jobId, err.message);
+    });
+}
+
+function finishAfterCrawl(job) {
+  if (job.autoPublish) {
+    schedulePublish(job.id);
+  } else if (job.outputMode === 'html') {
+    scheduleDraft(job.id);
+  }
+}
+
+async function generateDraftJobResult(job) {
+  const products = resolveProductsForPublish(job);
+  if (!products.some((p) => (p.reviews || []).length)) {
+    throw new Error('생성할 리뷰 데이터가 없습니다.');
+  }
+
+  console.log(`[draft ${job.id}] 상품 ${products.length}개 → 본문 HTML 생성`);
+
+  const { title, content, tags, focusKeyphrase, metaDescription } = await generatePost(
+    {
+      products,
+      productUrl: products[0]?.productUrl || job.result?.productUrl,
+      productTitle: products.map((p) => p.productTitle).join(' · '),
+      reviews: products.flatMap((p) => p.reviews || []),
+      totalReviews: products.reduce((n, p) => n + (p.reviews?.length || 0), 0),
+      seoKeyword: job.seoKeyword || ''
+    },
+    config
+  );
+
+  return {
+    title,
+    content,
+    tags: tags || [],
+    focusKeyphrase: focusKeyphrase || job.seoKeyword || '',
+    metaDescription: metaDescription || ''
+  };
+}
+
 async function publishJobResult(job) {
   const products = resolveProductsForPublish(job);
   if (!products.some((p) => (p.reviews || []).length)) {
@@ -179,16 +231,18 @@ app.get('/api/bridge/status', (_req, res) => {
 
 app.post('/api/jobs', (req, res) => {
   try {
-    const { coupangUrl, coupangUrls, maxPages, autoPublish, seoKeyword } = req.body || {};
+    const { coupangUrl, coupangUrls, maxPages, autoPublish, seoKeyword, outputMode } = req.body || {};
     const kw = String(seoKeyword || '').trim();
     if (!kw) {
       return res.status(400).json({ error: 'SEO 키워드를 입력하세요.' });
     }
+    const mode = outputMode === 'html' || autoPublish === false ? 'html' : 'wordpress';
     const job = jobs.createJob({
       coupangUrl,
       coupangUrls,
       maxPages: Number(maxPages) || 5,
-      autoPublish: !!autoPublish,
+      autoPublish: mode === 'wordpress',
+      outputMode: mode,
       seoKeyword: kw
     });
     res.status(201).json({ job: jobs.publicJob(job) });
@@ -249,9 +303,7 @@ app.post('/api/jobs/:id/complete', async (req, res) => {
       });
     }
 
-    if (job.autoPublish) {
-      schedulePublish(job.id);
-    }
+    finishAfterCrawl(job);
 
     res.json({ ok: true, done: true, job: jobs.publicJob(jobs.getJob(job.id)) });
   } catch (err) {
@@ -265,11 +317,32 @@ app.post('/api/jobs/:id/fail', (req, res) => {
   res.json({ ok: true, job: jobs.publicJob(job) });
 });
 
+app.post('/api/jobs/:id/draft', async (req, res) => {
+  try {
+    const job = jobs.getJob(req.params.id);
+    if (!job) return res.status(404).json({ error: '작업 없음' });
+    if (!['completed', 'drafted'].includes(job.status)) {
+      return res.status(400).json({ error: '크롤링이 완료된 작업만 본문을 생성할 수 있습니다.' });
+    }
+    if (job.status === 'generating') {
+      return res.json({ ok: true, job: jobs.publicJob(job) });
+    }
+    scheduleDraft(job.id);
+    res.json({ ok: true, job: jobs.publicJob(jobs.getJob(job.id)) });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.post('/api/jobs/:id/publish', async (req, res) => {
   try {
     const job = jobs.getJob(req.params.id);
     if (!job) return res.status(404).json({ error: '작업 없음' });
-    if (job.status !== 'completed' && job.status !== 'published') {
+    if (
+      job.status !== 'completed' &&
+      job.status !== 'published' &&
+      job.status !== 'drafted'
+    ) {
       return res.status(400).json({ error: '크롤링이 완료된 작업만 발행할 수 있습니다.' });
     }
     if (job.status === 'publishing') {
@@ -312,7 +385,7 @@ const server = app.listen(PORT, HOST, () => {
   console.log(`  public: ${publicDir}`);
   console.log(`  CRAWL_MODE=${crawlMode()}`);
   console.log('  종료: Ctrl+C');
-  startWorker(publishJobResult);
+  startWorker(publishJobResult, generateDraftJobResult);
 });
 
 server.on('error', (err) => {

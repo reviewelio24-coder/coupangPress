@@ -95,12 +95,51 @@ input[type="url"], input[type="number"], input[type="text"], input[type="passwor
 .hint-inline { font-size: 12px; color: var(--muted); margin: 8px 0 14px; line-height: 1.5; }
 #addUrlBtn { width: 100%; margin-bottom: 12px; }
 
-.checkbox {
+.checkbox, .radio {
   flex-direction: row !important;
   align-items: center;
   gap: 10px !important;
   color: var(--text);
 }
+
+.output-mode {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px 4px;
+  margin: 0 0 16px;
+}
+.output-mode legend {
+  padding: 0 6px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+#draftPanel {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+#draftPanel h3 { margin: 0 0 8px; font-size: 1rem; }
+#draftPanel textarea {
+  width: 100%;
+  padding: 11px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: #101820;
+  color: var(--text);
+  font-size: 13px;
+  font-family: ui-monospace, Consolas, monospace;
+  line-height: 1.45;
+  resize: vertical;
+}
+.copy-row { display: flex; gap: 8px; align-items: flex-start; }
+.copy-row input, .copy-row textarea { flex: 1; }
+.copy-btn { white-space: nowrap; margin-top: 0; }
+.draft-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+#draftBtn { width: 100%; margin-top: 10px; }
+
+.badge.generating { color: var(--warn); }
+.badge.drafted { color: var(--ok); }
 
 button {
   border: none;

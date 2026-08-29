@@ -1,4 +1,4 @@
-/** @typedef {'queued'|'running'|'completed'|'failed'|'publishing'|'published'} JobStatus */
+/** @typedef {'queued'|'running'|'completed'|'failed'|'publishing'|'published'|'generating'|'drafted'} JobStatus */
 
 const jobs = new Map();
 let bridgeLastSeen = null;
@@ -20,6 +20,7 @@ function publicJob(job) {
     coupangUrls: job.coupangUrls,
     maxPages: job.maxPages,
     autoPublish: job.autoPublish,
+    outputMode: job.outputMode || (job.autoPublish ? 'wordpress' : 'html'),
     seoKeyword: job.seoKeyword || '',
     productCount: job.coupangUrls.length,
     currentUrlIndex: job.currentUrlIndex,
@@ -35,25 +36,28 @@ function publicJob(job) {
         }
       : null,
     publish: job.publish || null,
+    draft: job.draft || null,
     error: job.error,
     createdAt: job.createdAt,
     updatedAt: job.updatedAt
   };
 }
 
-function createJob({ coupangUrl, coupangUrls, maxPages, autoPublish, seoKeyword }) {
+function createJob({ coupangUrl, coupangUrls, maxPages, autoPublish, outputMode, seoKeyword }) {
   const urls = normalizeUrls(coupangUrls?.length ? coupangUrls : [coupangUrl]);
   if (!urls.length) {
     throw new Error('유효한 쿠팡 상품 URL이 필요합니다.');
   }
 
+  const mode = outputMode === 'html' ? 'html' : 'wordpress';
   const id = `job_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
   const job = {
     id,
     coupangUrls: urls,
     coupangUrl: urls[0],
     maxPages: maxPages || 5,
-    autoPublish: !!autoPublish,
+    outputMode: mode,
+    autoPublish: mode === 'wordpress',
     seoKeyword: String(seoKeyword || '').trim(),
     currentUrlIndex: 0,
     crawlInFlight: false,
@@ -69,6 +73,7 @@ function createJob({ coupangUrl, coupangUrls, maxPages, autoPublish, seoKeyword 
     },
     result: null,
     publish: null,
+    draft: null,
     error: null,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
@@ -265,6 +270,36 @@ function setPublished(id, publishResult) {
   return job;
 }
 
+function setGenerating(id) {
+  const job = jobs.get(id);
+  if (!job) return null;
+  job.status = 'generating';
+  job.progress.message = '본문 HTML 생성 중… (상품이 많으면 2~3분 걸릴 수 있습니다)';
+  touchJob(job);
+  return job;
+}
+
+function setDrafted(id, draft) {
+  const job = jobs.get(id);
+  if (!job) return null;
+  job.status = 'drafted';
+  job.draft = draft;
+  job.error = null;
+  job.progress.message = '본문 HTML 생성 완료 — 복사해서 WordPress에 붙여넣으세요';
+  touchJob(job);
+  return job;
+}
+
+function revertToCompleted(id, error) {
+  const job = jobs.get(id);
+  if (!job) return null;
+  job.status = 'completed';
+  job.error = error || job.error;
+  job.progress.message = error || '크롤링 완료';
+  touchJob(job);
+  return job;
+}
+
 function recordBridgeHeartbeat() {
   bridgeLastSeen = Date.now();
 }
@@ -307,6 +342,9 @@ module.exports = {
   failJob,
   setPublishing,
   setPublished,
+  setGenerating,
+  setDrafted,
+  revertToCompleted,
   publicJob,
   recordBridgeHeartbeat,
   bridgeStatus,
