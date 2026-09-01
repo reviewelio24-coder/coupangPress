@@ -182,9 +182,12 @@ input:focus {
 }
 
 .output-mode {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   background: #161618;
   border-radius: var(--radius);
-  padding: 6px 14px 8px;
+  padding: 12px 14px 10px;
   margin: 0 0 16px;
   border-top: 0.5px solid var(--edge-lo);
   border-left: 0.5px solid var(--edge-lo);
@@ -192,11 +195,15 @@ input:focus {
   border-bottom: 0.5px solid var(--edge-hi);
   box-shadow: var(--inset);
 }
-.output-mode legend {
-  padding: 0 4px;
+.output-mode-label {
+  margin: 0;
+  padding: 0;
   color: var(--muted);
   font-size: 12px;
   font-weight: 600;
+}
+.output-mode .radio {
+  margin-bottom: 0;
 }
 
 #draftPanel {

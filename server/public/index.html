@@ -8,7 +8,7 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png?v=1.5.1" />
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png?v=1.5.1" />
   <link rel="apple-touch-icon" href="/brand-icon.png?v=1.5.1" />
-  <link rel="stylesheet" href="/style.css?v=ios-bevel" />
+  <link rel="stylesheet" href="/style.css?v=ios-bevel-3" />
 </head>
 <body>
   <div class="layout">
@@ -54,8 +54,8 @@
             최대 크롤링 페이지 (상품당)
             <input type="number" id="maxPages" min="1" max="50" value="5" />
           </label>
-          <fieldset class="output-mode">
-            <legend>완료 후</legend>
+          <div class="output-mode" role="group" aria-labelledby="outputModeLabel">
+            <p id="outputModeLabel" class="output-mode-label">완료 후</p>
             <label class="radio">
               <input type="radio" name="outputMode" value="wordpress" checked />
               WordPress 자동 발행
@@ -64,7 +64,7 @@
               <input type="radio" name="outputMode" value="html" />
               본문 HTML만 생성 (품절 교체 등 수동 발행)
             </label>
-          </fieldset>
+          </div>
           <button type="submit" class="primary" id="startBtn">크롤링 시작</button>
         </form>
         <p class="hint" id="modeHint">
