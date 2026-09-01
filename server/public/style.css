@@ -181,26 +181,28 @@ input:focus {
   font-weight: 400 !important;
 }
 
+.output-mode-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-bottom: 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+}
 .output-mode {
   display: flex;
   flex-direction: column;
   gap: 8px;
   background: #161618;
-  border-radius: var(--radius);
-  padding: 12px 14px 10px;
-  margin: 0 0 16px;
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  margin: 0;
   border-top: 0.5px solid var(--edge-lo);
   border-left: 0.5px solid var(--edge-lo);
   border-right: 0.5px solid var(--edge-side);
   border-bottom: 0.5px solid var(--edge-hi);
   box-shadow: var(--inset);
-}
-.output-mode-label {
-  margin: 0;
-  padding: 0;
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 600;
 }
 .output-mode .radio {
   margin-bottom: 0;
